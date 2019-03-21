@@ -1,0 +1,22 @@
+# List packages to add to your image one per line.
+
+# Pre-requirements
+libxslt
+libxml2
+# Database
+postgresql96-server
+postgresql96-plpython
+postgresql96-contrib
+postgresql96-client
+# Python Requirements
+python36
+py36-pip
+py36-psycopg2
+py36-lxml
+py36-Pillow
+py36-cryptography
+# Taiga Events
+rabbitmq
+redis
+# Web Proxy
+nginx

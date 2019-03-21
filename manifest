@@ -1,0 +1,8 @@
+name="core-taiga"
+organization="SkyLime"
+brand="Instance"
+version="18.4.0"
+description="Your Agile, Free and Open Source Project Management Tool"
+homepage="https://github.com/skylime/mi-core-taiga"
+users="root admin"
+base="f2e83a3d-c128-4f67-b398-9cb841b2783a"

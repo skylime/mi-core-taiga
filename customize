@@ -1,0 +1,60 @@
+#!/usr/bin/bash
+#
+# Put customizations to your image in this file.
+
+PATH=/opt/local/gnu/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin
+
+# Taiga versions
+TAIGA_VERSION='4.2.1'
+TAIGA_BACK_URL="https://github.com/taigaio/taiga-back/archive/${TAIGA_VERSION}.tar.gz"
+TAIGA_FRONT_URL="https://github.com/taigaio/taiga-front-dist/archive/${TAIGA_VERSION}-stable.tar.gz"
+
+# Munin plugins
+MUNIN_PLUGINS="
+"
+
+# Exit if any commands fail
+set -o errexit
+
+echo "* Use default python 3.6"
+pkg_alternatives manual python36
+pkg_alternatives manual py36-pip
+
+echo "* Remove used pgsql stuff from base"
+rm -rf "/var/pgsql/*"
+
+echo "* Configuring image specific packages."
+mkdir -p /opt/taiga
+mkdir -p /opt/taiga_frontend
+
+echo "* Download and extract"
+curl -L "${TAIGA_BACK_URL}" | gtar xz -C /opt/taiga --strip-components=1
+curl -L "${TAIGA_FRONT_URL}" | gtar xz -C /opt/taiga_frontend --strip-components=1
+
+echo "* Create taiga user and groups"
+groupadd taiga
+useradd -d /opt/taiga -c "taiga user" -s /usr/bin/false -g taiga taiga
+
+echo "* Setup permissions for the taiga folder"
+chown -R taiga:www /opt/taiga
+chown -R taiga:www /opt/taiga_frontend
+
+echo "* Install python requirements via pip"
+gsed -i \
+	-e '/psycopg2-binary/d' \
+	-e '/lxml/d' \
+	-e '/pillow/d' \
+	-e '/cryptography/d' \
+	/opt/taiga/requirements.txt
+
+pip3.6 install -r /opt/taiga/requirements.txt
+
+echo "* Activate munin plugins"
+/opt/core/bin/munin-node-plugins ${MUNIN_PLUGINS}
+
+echo "* Cleanup home/admin because of delegate dataset usage"
+rm -rf /home/admin/.[^.]*
+
+echo "* Cleaning up"
+rm -rf /root/*
+sm-prepare-image -y
