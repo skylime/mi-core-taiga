@@ -21,7 +21,7 @@ pkg_alternatives manual python36
 pkg_alternatives manual py36-pip
 
 echo "* Remove used pgsql stuff from base"
-rm -rf "/var/pgsql/*"
+rm -rf /var/pgsql/*
 
 echo "* Configuring image specific packages."
 mkdir -p /opt/taiga
