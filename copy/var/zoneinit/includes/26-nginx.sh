@@ -11,7 +11,6 @@ mkdir -p "${SSL_HOME}"
 
 # Enable nginx+php-fpm webserver service
 svcadm enable -s ${SVC_NAME}
-svcadm enable svc:/pkgsrc/php-fpm:default
 
 # Try to obtain Let's Encrypt SSL certificate
-/opt/core/bin/ssl-generator.sh ${SSL_HOME} nginx_ssl nginx ${SVC_NAME}
+#/opt/core/bin/ssl-generator.sh ${SSL_HOME} nginx_ssl nginx ${SVC_NAME}
