@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
-if [ ! /var/pgsql/data ]; then
-	sudo -u postgres initdb -U postgres /var/pgsql/data
+PGSQL_DATADIR=/var/pgsql/data
+
+if [ ! -d ${PGSQL_DATADIR} ]; then
+	install -d -u postgres -g postgres ${PGSQL_DATADIR}
+	sudo -u postgres initdb -U postgres ${PGSQL_DATADIR}
 fi
