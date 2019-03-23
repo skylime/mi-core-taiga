@@ -18,9 +18,7 @@ log "(it took ${COUNT} seconds to start properly)"
 
 echo 'postgres' | mdata-put pgsql_pw
 
-sudo -u postgres 
-
-
-PGPASSWORD=postgres createdb taiga -U postgres -O taiga --encoding='utf-8' --locale='en_US.UTF-8' --template=template0
-
-sm-create-dbuser postgresql taiga changeme taiga
+if ! psql -U postgres -lqt | cut -d \| -f 1 | grep -qw taiga 2>/dev/null; then
+	PGPASSWORD=postgres createuser -U postgres -s taiga
+	PGPASSWORD=postgres createdb taiga -U postgres -O taiga --encoding='utf-8' --locale='en_US.UTF-8' --template=template0
+fi
