@@ -4,4 +4,4 @@
 #rabbitmqctl add_vhost taiga
 #rabbitmqctl set_permissions -p taiga taiga ".*" ".*" ".*"
 
-svcadm enable rabbitmq
+svcadm enable -r rabbitmq

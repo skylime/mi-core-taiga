@@ -16,9 +16,20 @@ done
 [[ -n "${ERROR}" ]] && exit 31
 log "(it took ${COUNT} seconds to start properly)"
 
-echo 'postgres' | mdata-put pgsql_pw
+log "create new postgres password and update database credentials"
+if PGSQL_PW=$(/opt/core/bin/mdata-create-password.sh -m pgsql_pw 2>/dev/null); then
+	PGPASSWORD=postgres \
+		psql -U postgres -d postgres -c "alter user postgres with password '${PGSQL_PW}';"
+fi
 
+log "create user and database for taiga"
 if ! psql -U postgres -lqt | cut -d \| -f 1 | grep -qw taiga 2>/dev/null; then
-	PGPASSWORD=postgres createuser -U postgres -s taiga
-	PGPASSWORD=postgres createdb taiga -U postgres -O taiga --encoding='utf-8' --locale='en_US.UTF-8' --template=template0
+	export PGPASSWORD=$(mdata-get pgsql_pw)
+	createuser -U postgres -s taiga
+	createdb taiga -U postgres -O taiga \
+		--encoding='utf-8' --locale='en_US.UTF-8' --template=template0
+
+	if TAIGA_PGSQL_PW=$(/opt/core/bin/mdata-create-password.sh -m taiga_pgsql_pw 2>/dev/null); then
+		psql -U taiga -d taiga -c "alter user postgres with password '${TAIGA_PGSQL_PW}';"
+	fi
 fi
