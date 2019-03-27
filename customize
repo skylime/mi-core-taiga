@@ -29,7 +29,9 @@ mkdir -p /opt/taiga_frontend
 
 echo "* Download and extract"
 curl -L "${TAIGA_BACK_URL}" | gtar xz -C /opt/taiga --strip-components=1
-curl -L "${TAIGA_FRONT_URL}" | gtar xz -C /opt/taiga_frontend --strip-components=1
+
+# taiga_frontend should only contains the dist folder content of the tgz
+curl -L "${TAIGA_FRONT_URL}" | gtar xz -C /opt/taiga_frontend --strip-components=2
 
 echo "* Create taiga user and groups"
 groupadd taiga
