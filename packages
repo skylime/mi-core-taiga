@@ -8,6 +8,9 @@ postgresql96-server
 postgresql96-plpython
 postgresql96-contrib
 postgresql96-client
+# Translations fail if not gnu gettext
+gettext-tools
+gettext
 # Python Requirements
 python36
 py36-pip
