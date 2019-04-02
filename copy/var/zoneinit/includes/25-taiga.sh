@@ -2,6 +2,7 @@
 
 TAIGA_DIR="/opt/taiga"
 TAIGA_DIST_DIR="/opt/taiga_frontend"
+TAIGA_EVENTS_DIR="/opt/taiga_events"
 TAIGA_HOSTNAME=$(hostname)
 TAIGA_RMQ_PW=$(mdata-get taiga_rabbitmq_pw)
 TAIGA_PGSQL_PW=$(mdata-get taiga_pgsql_pw)
@@ -14,6 +15,8 @@ from .common import *
 
 MEDIA_URL = "https://${TAIGA_HOSTNAME}/media/"
 STATIC_URL = "https://${TAIGA_HOSTNAME}/static/"
+SITES["api"]["scheme"] = "https"
+SITES["api"]["domain"] = "${TAIGA_HOSTNAME}"
 SITES["front"]["scheme"] = "https"
 SITES["front"]["domain"] = "${TAIGA_HOSTNAME}"
 
@@ -40,8 +43,7 @@ DATABASES = {
         'PORT': '',
     }
 }
-# Uncomment and populate with proper connection parameters
-# for enable email sending. EMAIL_HOST_USER should end by @domain.tld
+
 #EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 #EMAIL_USE_TLS = False
 #EMAIL_HOST = "localhost"
@@ -50,22 +52,18 @@ DATABASES = {
 #EMAIL_PORT = 25
 EOF
 
-log "taiga migrate"
-pushd ${TAIGA_DIR} >/dev/null
-${TAIGA_DIR}/manage.py migrate --noinput
-log "taiga initialise user"
-${TAIGA_DIR}/manage.py loaddata initial_user
-log "taiga initialise project templates"
-${TAIGA_DIR}/manage.py loaddata initial_project_templates
-log "taiga compile messages"
-${TAIGA_DIR}/manage.py compilemessages
-log "taige collect static files"
-${TAIGA_DIR}/manage.py collectstatic --noinput
-
-log "fix all permissions"
-chown -R taiga:taiga ${TAIGA_DIR}
-popd >/dev/null
-
+log "enable trello import if TRELLO_API_KEY and TRELLO_API_SECRET provided"
+if TRELLO_API_KEY=$(mdata-get trello_api_key >/dev/null 2>&1) && \
+   TRELLO_API_SECRET=$(mdata-get trello_api_secret >/dev/null 2>&1); then
+	cat >> ${TAIGA_DIR}/settings/local.py <<-EOF
+	IMPORTERS["trello"] = {
+	    "active": True,
+	    "api_key": "${TRELLO_API_KEY}",
+	    "secret_key": "${TRELLO_API_SECRET}"
+	}
+	EOF
+	IMPORTERS="trello"
+fi
 
 log "create taiga dist configuration file"
 cat > ${TAIGA_DIST_DIR}/conf.json <<-EOF
@@ -79,10 +77,52 @@ cat > ${TAIGA_DIST_DIR}/conf.json <<-EOF
  "termsOfServiceUrl": null,
  "GDPRUrl": null,
  "maxUploadFileSize": null,
- "contribPlugins": []
+ "contribPlugins": [],
+ "importers": ["${IMPORTERS}"]
 }
 EOF
 
+log "configure taiga events"
+cat > ${TAIGA_EVENTS_DIR}/config.json <<-EOF
+{
+    "url": "amqp://taiga:${TAIGA_RMQ_PW}@localhost:5672",
+    "secret": "${TAIGA_SECRET_KEY}",
+    "webSocketServer": {
+        "port": 8888
+    }
+}
+EOF
+
+log "fix configuration file for celery"
+sed -i "s|^broker_url.*|broker_url = 'amqp://taiga:${TAIGA_RMQ_PW}@localhost:5672/taiga'|g" \
+	${TAIGA_DIR}/settings/celery.py
+
+log "taiga migrate"
+pushd ${TAIGA_DIR} >/dev/null
+${TAIGA_DIR}/manage.py migrate --noinput
+
+log "check if admin user already exists"
+if ! ${TAIGA_DIR}/manage.py shell -c \
+     'from django.contrib.auth import get_user_model; \
+      User=get_user_model(); \
+      User.objects.get(username="admin")' >/dev/null 2>&1; then
+	log "taiga initialise user"
+	${TAIGA_DIR}/manage.py loaddata initial_user
+	log "taiga initialise project templates"
+	${TAIGA_DIR}/manage.py loaddata initial_project_templates
+fi
+
+log "taiga compile messages"
+${TAIGA_DIR}/manage.py compilemessages
+log "taige collect static files"
+${TAIGA_DIR}/manage.py collectstatic --noinput
+
+log "fix all permissions"
+chown -R taiga:taiga ${TAIGA_DIR}
+popd >/dev/null
 
 log "enable taiga gunicorn service"
 svcadm enable svc:/network/gunicorn:taiga
+
+log "enable taiga events service"
+#svcadm enable svc:/network/coffeescript:taiga-events
