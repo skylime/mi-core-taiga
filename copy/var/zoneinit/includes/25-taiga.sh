@@ -53,8 +53,8 @@ DATABASES = {
 EOF
 
 log "enable trello import if TRELLO_API_KEY and TRELLO_API_SECRET provided"
-if TRELLO_API_KEY=$(mdata-get trello_api_key >/dev/null 2>&1) && \
-   TRELLO_API_SECRET=$(mdata-get trello_api_secret >/dev/null 2>&1); then
+if TRELLO_API_KEY=$(mdata-get trello_api_key 2>/dev/null) && \
+   TRELLO_API_SECRET=$(mdata-get trello_api_secret 2>/dev/null); then
 	cat >> ${TAIGA_DIR}/settings/local.py <<-EOF
 	IMPORTERS["trello"] = {
 	    "active": True,
@@ -126,3 +126,6 @@ svcadm enable svc:/network/gunicorn:taiga
 
 log "enable taiga events service"
 #svcadm enable svc:/network/coffeescript:taiga-events
+
+log "enable taiga celery service"
+#svcadm enable svc:/network/celery:taiga
