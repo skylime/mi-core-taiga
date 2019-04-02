@@ -8,6 +8,7 @@ PATH=/opt/local/gnu/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin
 TAIGA_VERSION='4.2.1'
 TAIGA_BACK_URL="https://github.com/taigaio/taiga-back/archive/${TAIGA_VERSION}.tar.gz"
 TAIGA_FRONT_URL="https://github.com/taigaio/taiga-front-dist/archive/${TAIGA_VERSION}-stable.tar.gz"
+TAIGA_EVENTS_URL="https://github.com/skylime/taiga-events/archive/${TAIGA_VERSION}.tar.gz"
 
 # Munin plugins
 MUNIN_PLUGINS="
@@ -26,9 +27,11 @@ rm -rf /var/pgsql/*
 echo "* Configuring image specific packages."
 mkdir -p /opt/taiga
 mkdir -p /opt/taiga_frontend
+mkdir -p /opt/taiga_events
 
 echo "* Download and extract"
-curl -L "${TAIGA_BACK_URL}" | gtar xz -C /opt/taiga --strip-components=1
+curl -L "${TAIGA_BACK_URL}"   | gtar xz -C /opt/taiga --strip-components=1
+curl -L "${TAIGA_EVENTS_URL}" | gtar xz -C /opt/taiga_events --strip-components=1
 
 # taiga_frontend should only contains the dist folder content of the tgz
 curl -L "${TAIGA_FRONT_URL}" | gtar xz -C /opt/taiga_frontend --strip-components=2
@@ -37,9 +40,17 @@ echo "* Create taiga user and groups"
 groupadd taiga
 useradd -d /opt/taiga -c "taiga user" -s /usr/bin/false -g taiga taiga
 
+echo "* Install additional requirements for taiga_events"
+cd /opt/taiga_events && npm install .
+
 echo "* Setup permissions for the taiga folder"
 chown -R taiga:www /opt/taiga
 chown -R taiga:www /opt/taiga_frontend
+chown -R taiga:www /opt/taiga_events
+
+echo "* Installing coffeescript for taiga events"
+npm -g install coffeescript
+
 
 echo "* Install python requirements via pip"
 gsed -i \
