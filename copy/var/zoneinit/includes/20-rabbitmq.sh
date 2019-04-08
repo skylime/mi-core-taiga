@@ -9,12 +9,12 @@ svccfg -s svc:/pkgsrc/rabbitmq addpropvalue method_context/environment \
 	astring: '"RABBITMQ_NODE_IP_ADDRESS=127.0.0.1"'
 svccfg -s svc:/pkgsrc/epmd addpropvalue method_context/environment \
 	astring: '"ERL_EPMD_ADDRESS=127.0.0.1"'
-svcadm refresh svc:/pkgsrc/epmd svc:/pkgsrc/rabbitmq
 
 log "modify rabbitmq-env.conf to force localhost for EPMD if started by rabbitmq"
 echo 'export ERL_EPMD_ADDRESS=127.0.0.1' >> /opt/local/etc/rabbitmq/rabbitmq-env.conf
 
 log "enable rabbitmq service with all requirements"
+svcadm refresh svc:/pkgsrc/epmd svc:/pkgsrc/rabbitmq
 svcadm enable -r svc:/pkgsrc/rabbitmq:default
 
 export HOME=/var/db/rabbitmq
@@ -40,7 +40,7 @@ export LC_COLLATE=en_US.UTF-8
 log "waiting for rabbitmq to show up"
 COUNT="0"
 while ! rabbitmqctl status 2>&1; do
-	sleep 1
+	sleep 5
 	((COUNT=COUNT+1))
 	if [[ $COUNT -eq 60 ]]; then
 		log "ERROR Could not talk to RABBITMQ after 60 seconds"
