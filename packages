@@ -18,6 +18,7 @@ py36-psycopg2
 py36-lxml
 py36-Pillow
 py36-cryptography
+py36-celery
 # Taiga Events
 rabbitmq
 redis
