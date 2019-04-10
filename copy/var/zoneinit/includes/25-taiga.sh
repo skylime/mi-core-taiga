@@ -23,10 +23,11 @@ SITES["front"]["domain"] = "${TAIGA_HOSTNAME}"
 SECRET_KEY = "${TAIGA_SECRET_KEY}"
 
 DEBUG = False
-PUBLIC_REGISTER_ENABLED = True
+PUBLIC_REGISTER_ENABLED = False
 
 DEFAULT_FROM_EMAIL = "no-reply@${TAIGA_HOSTNAME}"
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
+FEEDBACK_ENABLED = False
 
 CELERY_ENABLED = True
 
@@ -43,13 +44,17 @@ DATABASES = {
         'PORT': '',
     }
 }
+EOF
 
-#EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-#EMAIL_USE_TLS = False
-#EMAIL_HOST = "localhost"
-#EMAIL_HOST_USER = ""
-#EMAIL_HOST_PASSWORD = ""
-#EMAIL_PORT = 25
+if mdata-get mail_smarthost >/dev/null 2>&1 && \
+   mdata-get mail_auth_user >/dev/null 2>&1; then
+cat >> ${TAIGA_DIR}/settings/local.py <<-EOF
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_USE_TLS = True
+EMAIL_HOST = "$(mdata-get mail_smarthost)"
+EMAIL_HOST_USER = "$(mdata-get mail_auth_user)"
+EMAIL_HOST_PASSWORD = "$(mdata-get mail_auth_pass)"
+EMAIL_PORT = 25
 EOF
 
 log "enable trello import if TRELLO_API_KEY and TRELLO_API_SECRET provided"
