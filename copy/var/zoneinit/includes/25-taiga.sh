@@ -28,11 +28,14 @@ PUBLIC_REGISTER_ENABLED = False
 DEFAULT_FROM_EMAIL = "no-reply@${TAIGA_HOSTNAME}"
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 FEEDBACK_ENABLED = False
+FEEDBACK_EMAIL = ""
 
 CELERY_ENABLED = True
 
 EVENTS_PUSH_BACKEND = "taiga.events.backends.rabbitmq.EventsPushBackend"
 EVENTS_PUSH_BACKEND_OPTIONS = {"url": "amqp://taiga:${TAIGA_RMQ_PW}@localhost:5672/taiga"}
+
+INSTALLED_APPS += ["taiga_contrib_email_overrides"]
 
 DATABASES = {
     'default': {
@@ -56,6 +59,7 @@ EMAIL_HOST_USER = "$(mdata-get mail_auth_user)"
 EMAIL_HOST_PASSWORD = "$(mdata-get mail_auth_pass)"
 EMAIL_PORT = 25
 EOF
+fi
 
 log "enable trello import if TRELLO_API_KEY and TRELLO_API_SECRET provided"
 if TRELLO_API_KEY=$(mdata-get trello_api_key 2>/dev/null) && \
@@ -111,6 +115,14 @@ if ! ${TAIGA_DIR}/manage.py shell -c \
      'from django.contrib.auth import get_user_model; \
       User=get_user_model(); \
       User.objects.get(username="admin")' >/dev/null 2>&1; then
+
+	if TAIGA_INIT_ADMIN_PW=$(/opt/core/bin/mdata-create-password.sh -m taiga_init_admin_pw 2>/dev/null); then
+		TAIGA_INIT_ADMIN_PW_HASH=$(${TAIGA_DIR}/manage.py shell -c \
+			'from django.contrib.auth.hashers import make_password; \
+			print(make_password("'${TAIGA_INIT_ADMIN_PW}'"))')
+		sed -i 's|"password": ".*",|"password": "'${TAIGA_INIT_ADMIN_PW_HASH}'",|g' \
+			${TAIGA_DIR}/taiga/users/fixtures/initial_user.json
+	fi
 	log "taiga initialise user"
 	${TAIGA_DIR}/manage.py loaddata initial_user
 	log "taiga initialise project templates"
