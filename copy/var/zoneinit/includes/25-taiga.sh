@@ -35,7 +35,7 @@ CELERY_ENABLED = True
 EVENTS_PUSH_BACKEND = "taiga.events.backends.rabbitmq.EventsPushBackend"
 EVENTS_PUSH_BACKEND_OPTIONS = {"url": "amqp://taiga:${TAIGA_RMQ_PW}@localhost:5672/taiga"}
 
-INSTALLED_APPS += ["taiga_contrib_email_overrides"]
+INSTALLED_APPS = ["taiga_contrib_email_overrides"] + INSTALLED_APPS
 
 DATABASES = {
     'default': {
@@ -79,8 +79,8 @@ cat > ${TAIGA_DIST_DIR}/conf.json <<-EOF
 {
  "api": "https://${TAIGA_HOSTNAME}/api/v1/",
  "eventsUrl": "wss://${TAIGA_HOSTNAME}/events",
- "debug": "true",
- "publicRegisterEnabled": true,
+ "debug": "false",
+ "publicRegisterEnabled": false,
  "feedbackEnabled": true,
  "privacyPolicyUrl": null,
  "termsOfServiceUrl": null,
@@ -98,6 +98,27 @@ cat > ${TAIGA_EVENTS_DIR}/config.json <<-EOF
     "secret": "${TAIGA_SECRET_KEY}",
     "webSocketServer": {
         "port": 8888
+    }
+}
+EOF
+
+log "generate extra django settings resolvers file"
+MAIL_DOMAIN=$(hostname | rev | cut -f-2 -d. | rev)
+MAIL_ADMINADDR="support@${MAIL_DOMAIN}"
+if mdata-get mail_adminaddr >/dev/null 2>&1; then
+	MAIL_ADMINADDR=$(mdata-get mail_adminaddr)
+fi
+cat > ${TAIGA_DIR}/settings/sr.py <<-EOF
+SR = {
+    "taigaio_url": "https://${TAIGA_HOSTNAME}",
+    "social": {
+        "twitter_url": "",
+        "github_url": "",
+    },
+    "support": {
+        "url": "",
+        "email": "${MAIL_ADMINADDR}",
+        "mailing_list": "",
     }
 }
 EOF
