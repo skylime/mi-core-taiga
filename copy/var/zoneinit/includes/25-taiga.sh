@@ -163,7 +163,7 @@ log "enable taiga gunicorn service"
 svcadm enable svc:/network/gunicorn:taiga
 
 log "enable taiga events service"
-#svcadm enable svc:/network/coffeescript:taiga-events
+svcadm enable svc:/network/coffeescript:taiga-events
 
 log "enable taiga celery service"
-#svcadm enable svc:/network/celery:taiga
+svcadm enable svc:/network/celery:taiga
