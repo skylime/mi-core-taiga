@@ -37,6 +37,8 @@ EVENTS_PUSH_BACKEND_OPTIONS = {"url": "amqp://taiga:${TAIGA_RMQ_PW}@localhost:56
 
 INSTALLED_APPS = ["taiga_contrib_email_overrides"] + INSTALLED_APPS
 
+THUMBNAIL_EXTENSION = 'png'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
