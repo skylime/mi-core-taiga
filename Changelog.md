@@ -1,0 +1,42 @@
+# Changelog
+
+## 18.4.0 (2019-04-25)
+
+### Other
+
+* Thumbnails should be PNG. [Thomas Merkel]
+* Enable services, fix nginx https listening for ipv6. [Thomas Merkel]
+* Disable debug mode for UI, add mail support email address. [Thomas Merkel]
+* Add own email templates for taiga. [Thomas Merkel]
+* Generate admin init password if needed. [Thomas Merkel]
+* Disable public registration, enable email support. [Thomas Merkel]
+* Fix refresh for rabbitMQ. [Thomas Merkel]
+* Switch to newer celery version and special py-amqp SunOS version. [Thomas Merkel]
+* Provide workaround for SunOS py-amqp. [Thomas Merkel]
+* Only errors to /dev/null. [Thomas Merkel]
+* Add SMF for celery services. [Thomas Merkel]
+* Add SMF for coffeescript, taiga-events. [Thomas Merkel]
+* Taiga Events Support, importers options, check user exists. [Thomas Merkel]
+* Provide secure RabbitMQ setup. [Thomas Merkel]
+* Install rabbitmq database and keep it in delegate dataset. [Thomas Merkel]
+* Add taiga-events, download and requirements. [Thomas Merkel]
+* Add nodejs for taiga-events. [Thomas Merkel]
+* Fix LE nginx. [Thomas Merkel]
+* Fix nginx configuration file. [Thomas Merkel]
+* Fix application name of gunicorn service. [Thomas Merkel]
+* Provide gunicorn SMF manifest. [Thomas Merkel]
+* Provide taiga setup script and configuration. [Thomas Merkel]
+* Enable redis by default. [Thomas Merkel]
+* Add nginx.conf conf file. [Thomas Merkel]
+* Translations fail if not gnu gettext. [Thomas Merkel]
+* Modify location for taiga_frontend dist files. [Thomas Merkel]
+* Provide rabbitMQ configuration and permission setup. [Thomas Merkel]
+* Add new pgsql setup and script to create mdata secrets easily. [Thomas Merkel]
+* Cleanup manifest.json. [Thomas Merkel]
+* Remove quotes. [Thomas Merkel]
+* Remove unused backup file. [Thomas Merkel]
+* Remove php-fpm. [Thomas Merkel]
+* Create pgsql user only if it does not exists. [Thomas Merkel]
+* Fix initdb. [Thomas Merkel]
+* Init, first commit. [Thomas Merkel]
+
