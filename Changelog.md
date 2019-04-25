@@ -2,7 +2,7 @@
 
 ## 18.4.0 (2019-04-25)
 
-### Other
+### New
 
 * Thumbnails should be PNG. [Thomas Merkel]
 * Enable services, fix nginx https listening for ipv6. [Thomas Merkel]
